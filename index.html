@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thư viện sách</title>
+<style>
+  :root{--bg:#f7faff;--card:#fff;--ink:#26304a;--mut:#7b849d;--line:#e5eaf5;--acc:#3f7bff;--acc2:#8a5cff;--warm:#ff9a62;--ok:#25b46f;--bad:#e5484d;--sh:0 8px 28px rgba(63,123,255,.10)}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.55 "Segoe UI",system-ui,sans-serif;color:var(--ink);min-height:100vh;
+    background:radial-gradient(900px 420px at 0% -10%,#dfe9ff,transparent),radial-gradient(800px 420px at 100% 0,#ffeadb,transparent),var(--bg)}
+  header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .bar{max-width:1040px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{font-size:1.25rem;font-weight:800;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  main{max-width:1040px;margin:0 auto;padding:8px 16px 48px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:18px 0;box-shadow:var(--sh)}
+  h2{margin:0 0 12px;font-size:1.1rem}
+  input,select,button{font:inherit;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  input:focus,select:focus{outline:2px solid #bcd0ff;border-color:var(--acc)}
+  button{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:0;cursor:pointer;font-weight:600;transition:transform .12s,box-shadow .12s}
+  button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 14px rgba(63,123,255,.28)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.alt{background:#fff;color:var(--acc);border:1px solid #c9d8ff}
+  button.danger{background:#fff;color:var(--bad);border:1px solid #f5c2c4}
+  button.sm{padding:6px 10px;font-size:.88rem}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+  .row>input{flex:1;min-width:140px}
+  .mut{color:var(--mut);font-size:.9em} .bad{color:var(--bad)} .hidden{display:none}
+  #msg{position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:9;padding:10px 18px;border-radius:999px;background:var(--ok);color:#fff;font-weight:600;box-shadow:var(--sh);opacity:0;pointer-events:none;transition:opacity .2s}
+  #msg.show{opacity:1} #msg.err{background:var(--bad)}
+  /* login */
+  .hero{max-width:420px;margin:56px auto}
+  .hero h1{font-size:2rem;margin:0 0 4px} .hero p{margin:0 0 16px;color:var(--mut)}
+  .tabs{display:flex;background:#eef3ff;border-radius:12px;padding:4px;margin-bottom:12px}
+  .tabs button{flex:1;background:none;color:var(--mut);box-shadow:none}
+  .tabs button.on{background:#fff;color:var(--acc);box-shadow:0 2px 8px rgba(63,123,255,.15)}
+  .hero input{width:100%;margin:6px 0} .hero .go{width:100%;margin-top:8px}
+  /* books */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:16px}
+  .book{display:flex;flex-direction:column;gap:4px}
+  .cover{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;box-shadow:0 6px 16px rgba(38,48,74,.18);display:block}
+  .ph{display:flex;align-items:center;justify-content:center;color:#fff;font-size:3rem;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .bt{font-weight:700;line-height:1.3;margin-top:6px} .ba{color:var(--mut);font-size:.9em}
+  .chip{align-self:flex-start;background:#eef3ff;color:var(--acc);border-radius:999px;padding:1px 10px;font-size:.8rem}
+  .price{font-weight:700;color:var(--warm)} .score{font-size:.82rem;color:var(--mut)}
+  .book .row{margin:6px 0 0;gap:6px}
+  .item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+  .item:first-of-type{border-top:0}
+  .form{display:grid;grid-template-columns:150px 1fr;gap:16px}
+  .form .cover{aspect-ratio:3/4;background:#eef3ff;border:2px dashed #c9d8ff;box-shadow:none}
+  @media(max-width:560px){.form{grid-template-columns:1fr}.form .pv{max-width:150px}}
+</style>
+</head>
+<body>
+<header><div class="bar"><span class="brand">📚 Thư viện sách</span><div class="row" id="who" style="margin:0"></div></div></header>
+<div id="msg"></div>
+
+<main>
+<section id="auth" class="hero">
+  <h1>Chào mừng 👋</h1><p>Chỉ cần email và mật khẩu để bắt đầu mượn sách.</p>
+  <div class="tabs"><button id="tabLogin" class="on" onclick="setMode('login')">Đăng nhập</button><button id="tabReg" onclick="setMode('register')">Đăng ký</button></div>
+  <input id="email" type="email" placeholder="Email" autocomplete="email">
+  <input id="pw" type="password" placeholder="Mật khẩu (≥ 8 ký tự)" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitAuth()">
+  <button class="go" id="go" onclick="submitAuth()">Đăng nhập</button>
+</section>
+
+<div id="app" class="hidden">
+  <section>
+    <h2>✨ Gợi ý cho bạn</h2>
+    <div class="row"><select id="topic" onchange="loadRecs();loadBooks()"></select><span class="mut">Chọn chủ đề bạn muốn đọc</span></div>
+    <div id="recs" class="grid"></div>
+  </section>
+
+  <section>
+    <h2>📖 Tất cả sách</h2>
+    <div class="row"><input id="q" placeholder="Tìm theo tên sách hoặc tác giả" oninput="loadBooks()"></div>
+    <div id="books" class="grid"></div>
+  </section>
+
+  <section><h2>📌 Sách đang mượn</h2><div id="loans"></div></section>
+
+  <section>
+    <h2>🛒 Giỏ hàng</h2><div id="cart"></div>
+    <div class="row"><button id="pay" onclick="checkout()">Thanh toán</button><button id="cancel" class="danger" onclick="cancelOrder()">Hủy đơn</button></div>
+  </section>
+
+  <section>
+    <h2>➕ Thêm sách mới</h2>
+    <div class="form">
+      <div class="pv"><div id="prev"><div class="cover ph" style="color:#9db4f5">+</div></div></div>
+      <div>
+        <div class="row"><input id="nt" placeholder="Tên sách"><input id="na" placeholder="Tác giả"></div>
+        <div class="row"><input id="nc" list="topicList" placeholder="Chủ đề"><datalist id="topicList"></datalist></div>
+        <div class="row"><input id="np" type="number" min="0" placeholder="Giá (đ)"><input id="nb" type="number" min="0" placeholder="Số bản cho mượn"><input id="ns" type="number" min="0" placeholder="Số bản để bán"></div>
+        <div class="row"><input id="nu" placeholder="Link ảnh bìa (tùy chọn)"><input id="nf" type="file" accept="image/*"></div>
+        <button onclick="addBook()">Thêm sách</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="admin" class="hidden"><h2>🗂️ Thủ thư: tất cả lượt mượn</h2><div id="allLoans"></div></section>
+</div>
+</main>
+
+<script>
+let token = sessionStorage.getItem('token'), me = null, mode = 'login', coverData = '', timer;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => Number(n).toLocaleString('vi-VN') + 'đ';
+const date = t => new Date(t * 1000).toLocaleDateString('vi-VN');
+function say(text, bad) {
+  const m = $('msg'); m.textContent = text || ''; m.className = (text ? 'show ' : '') + (bad ? 'err' : '');
+  clearTimeout(timer); timer = setTimeout(() => m.className = '', 3200);
+}
+async function api(path, method = 'GET', body) {
+  const r = await fetch('/api' + path, { method,
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+    body: body ? JSON.stringify(body) : undefined });
+  const j = r.status === 204 ? {} : await r.json();
+  if (!r.ok) throw new Error(j.message || j.error);
+  return j;
+}
+const run = async (fn, ok) => { try { await fn(); if (ok) say(ok); } catch (e) { say(e.message, true); } };
+
+function cover(b) {
+  if (b.image_url) return `<img class="cover" src="${esc(b.image_url)}" alt="Bìa sách ${esc(b.title)}" loading="lazy">`;
+  const h = Math.abs([...b.title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7)) % 360;
+  return `<div class="cover ph" style="background:linear-gradient(135deg,hsl(${h},78%,70%),hsl(${(h + 45) % 360},82%,60%))">${esc(b.title.trim().charAt(0).toUpperCase())}</div>`;
+}
+const card = (b, extra) => `<div class="book">${cover(b)}<div class="bt">${esc(b.title)}</div><div class="ba">${esc(b.author)}</div><span class="chip">${esc(b.topic)}</span>${extra}</div>`;
+
+function setMode(m) {
+  mode = m; $('tabLogin').classList.toggle('on', m === 'login'); $('tabReg').classList.toggle('on', m === 'register');
+  $('go').textContent = m === 'login' ? 'Đăng nhập' : 'Tạo tài khoản';
+  $('pw').autocomplete = m === 'login' ? 'current-password' : 'new-password';
+}
+const submitAuth = () => run(async () => {
+  const body = { email: $('email').value, password: $('pw').value };
+  if (mode === 'register') await api('/register', 'POST', body);
+  const r = await api('/login', 'POST', body);
+  token = r.token; sessionStorage.setItem('token', token); await start();
+}, null);
+async function logout() { run(async () => { await api('/logout', 'POST'); token = null; sessionStorage.removeItem('token'); location.reload(); }); }
+
+async function start() {
+  me = await api('/me');
+  $('auth').classList.add('hidden'); $('app').classList.remove('hidden');
+  $('who').innerHTML = `<b>${esc(me.name)}</b><span class="mut">${me.role === 'librarian' ? 'thủ thư' : 'khách hàng'}</span><button class="alt sm" onclick="logout()">Đăng xuất</button>`;
+  $('admin').classList.toggle('hidden', me.role !== 'librarian');
+  const topics = await api('/topics');
+  $('topic').innerHTML = '<option value="">Tất cả chủ đề</option>' + topics.map(t => `<option>${esc(t)}</option>`).join('');
+  $('topicList').innerHTML = topics.map(t => `<option value="${esc(t)}">`).join('');
+  await refresh();
+}
+const refresh = () => Promise.all([loadRecs(), loadBooks(), loadLoans(), loadCart(), me.role === 'librarian' ? loadAllLoans() : 0]);
+
+async function loadRecs() { run(async () => {
+  const r = await api('/recommendations?topic=' + encodeURIComponent($('topic').value));
+  $('recs').innerHTML = r.map(b => card(b, `<div class="score" title="chủ đề ${b.topic_score.toFixed(1)} · lịch sử ${b.history_score.toFixed(2)} · phổ biến ${b.popularity_score.toFixed(2)}">Điểm phù hợp ${(b.score * 100).toFixed(0)}%</div><div class="row"><button class="sm" onclick="borrow(${b.id})">Mượn</button></div>`)).join('') || '<p class="mut">Chưa có gợi ý. Hãy chọn một chủ đề.</p>';
+}); }
+async function loadBooks() { run(async () => {
+  const r = await api('/books?topic=' + encodeURIComponent($('topic').value) + '&q=' + encodeURIComponent($('q').value));
+  $('books').innerHTML = r.map(b => card(b, `<div class="price">${money(b.price)}</div><div class="mut">Mượn còn ${b.copies_available} · Bán còn ${b.stock_for_sale}</div><div class="row"><button class="sm" ${b.copies_available < 1 ? 'disabled' : ''} onclick="borrow(${b.id})">Mượn</button><button class="alt sm" ${b.stock_for_sale < 1 ? 'disabled' : ''} onclick="addCart(${b.id})">+ Giỏ</button></div>`)).join('') || '<p class="mut">Không tìm thấy sách nào.</p>';
+}); }
+async function loadLoans() { run(async () => {
+  const r = await api('/loans');
+  $('loans').innerHTML = r.map(l => `<div class="item"><div><b>${esc(l.title)}</b><div class="${l.overdue ? 'bad' : 'mut'}">Hạn trả: ${date(l.due_at)}${l.overdue ? ' (quá hạn)' : ''}</div></div><button class="sm" onclick="giveBack(${l.id})">Trả sách</button></div>`).join('') || '<p class="mut">Bạn chưa mượn cuốn nào (tối đa 5 cuốn cùng lúc).</p>';
+}); }
+async function loadAllLoans() { const r = await api('/admin/loans');
+  $('allLoans').innerHTML = r.map(l => `<div class="item"><span>${esc(l.user)} — ${esc(l.title)}</span><span class="${l.overdue ? 'bad' : 'mut'}">hạn ${date(l.due_at)}</span></div>`).join('') || '<p class="mut">Chưa có lượt mượn nào.</p>'; }
+async function loadCart() { run(async () => {
+  const c = await api('/cart');
+  $('cart').innerHTML = c.items.map(i => `<div class="item"><span>${esc(i.title)} × ${i.qty}</span><span>${money(i.price * i.qty)}</span></div>`).join('') + `<div class="item"><b>Tổng</b><b>${money(c.total)}</b></div>`;
+  $('pay').disabled = $('cancel').disabled = !c.items.length;
+}); }
+
+const borrow = id => run(async () => { await api('/borrow', 'POST', { book_id: id }); await refresh(); }, 'Đã mượn sách');
+const giveBack = id => run(async () => { const r = await api('/return', 'POST', { loan_id: id }); await refresh(); say(r.late_fee ? 'Đã trả. Phí trễ hạn: ' + money(r.late_fee) : 'Đã trả sách'); });
+const addCart = id => run(async () => { await api('/cart', 'POST', { book_id: id, qty: 1 }); await loadCart(); }, 'Đã thêm vào giỏ');
+const checkout = () => run(async () => { const r = await api('/checkout', 'POST', { payment: 'card' }); await refresh(); say('Đặt hàng #' + r.order_id + ' thành công: ' + money(r.total)); });
+const cancelOrder = () => { if (confirm('Hủy đơn và xóa toàn bộ sách trong giỏ?')) run(async () => { await api('/cart/clear', 'POST'); await loadCart(); }, 'Đã hủy đơn'); };
+
+// Resize the chosen picture to a small 3:4 JPEG so it stays light in the database.
+const fileToDataUrl = file => new Promise((ok, fail) => {
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    const W = 240, H = 320, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const s = Math.max(W / img.width, H / img.height), w = img.width * s, h = img.height * s;
+    c.getContext('2d').drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+    URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', 0.8));
+  };
+  img.onerror = () => fail(new Error('Không đọc được file ảnh'));
+  img.src = url;
+});
+$('nf').onchange = async e => {
+  const f = e.target.files[0];
+  if (!f) { coverData = ''; return; }
+  try { coverData = await fileToDataUrl(f); $('prev').innerHTML = `<img class="cover" src="${coverData}" alt="Xem trước bìa">`; $('nu').value = ''; }
+  catch (err) { say(err.message, true); }
+};
+$('nu').oninput = () => { if ($('nu').value.trim()) { coverData = ''; $('nf').value = ''; $('prev').innerHTML = `<img class="cover" src="${esc($('nu').value.trim())}" alt="Xem trước bìa">`; } };
+const addBook = () => run(async () => {
+  await api('/books', 'POST', { title: $('nt').value, author: $('na').value, topic: $('nc').value,
+    price: +$('np').value || 0, copies_available: +$('nb').value || 0, stock_for_sale: +$('ns').value || 0,
+    image_url: coverData || $('nu').value.trim() });
+  ['nt', 'na', 'nc', 'np', 'nb', 'ns', 'nu', 'nf'].forEach(i => $(i).value = '');
+  coverData = ''; $('prev').innerHTML = '<div class="cover ph" style="color:#9db4f5">+</div>';
+  await start();
+}, 'Đã thêm sách mới');
+
+if (token) start().catch(() => { sessionStorage.removeItem('token'); token = null; });
+</script>
+</body>
+</html>
